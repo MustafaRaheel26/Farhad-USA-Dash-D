@@ -1,62 +1,64 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  LayoutDashboard, 
-  ChefHat, 
-  CheckCircle2, 
-  Bell, 
-  Settings, 
-  Search, 
-  Moon, 
-  Sun, 
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  LayoutDashboard,
+  ChefHat,
+  CheckCircle2,
+  Bell,
+  Settings,
+  Search,
+  Moon,
+  Sun,
   UtensilsCrossed,
   Clock,
   TrendingUp,
   AlertTriangle,
-  Plus
-} from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+  Plus,
+} from "lucide-react";
+import { Toaster, toast } from "sonner";
 
-import { Order, OrderStatus } from './types';
-import { INITIAL_ORDERS, MENU_ITEMS, CUSTOMER_NAMES } from './constants';
-import { OrderCard } from './components/OrderCard';
-import { StatsCard } from './components/StatsCard';
-import { ChefPanel } from './components/ChefPanel';
-import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
-import { Switch } from './components/ui/switch';
-import { ScrollArea } from './components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import { OrderCard } from "./components/OrderCard";
+import { StatsCard } from "./components/StatsCard";
+import { ChefPanel } from "./components/ChefPanel";
+import { Button } from "@/components/ui/button";
+import { Input } from "./components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export default function App() {
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'new' | 'preparing' | 'ready'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<
+    "all" | "new" | "preparing" | "ready"
+  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAutoGenerating, setIsAutoGenerating] = useState(true);
-  const [currentView, setCurrentView] = useState<'orders' | 'chef'>('orders');
-  
+  const [currentView, setCurrentView] = useState<"orders" | "chef">("orders");
+
   // Initialize dark mode
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
 
   const handleStatusChange = useCallback((id: string, status: OrderStatus) => {
-    setOrders(prev => {
-      const newOrders = prev.map(order => 
-        order.id === id ? { ...order, status } : order
+    setOrders((prev) => {
+      const newOrders = prev.map((order) =>
+        order.id === id ? { ...order, status } : order,
       );
-      
-      const order = prev.find(o => o.id === id);
+
+      const order = prev.find((o) => o.id === id);
       if (order) {
-        toast.success(`Order #${order.orderNumber.split('-')[1]} moved to ${status}`);
+        toast.success(
+          `Order #${order.orderNumber.split("-")[1]} moved to ${status}`,
+        );
       }
-      
+
       return newOrders;
     });
   }, []);
@@ -65,29 +67,30 @@ export default function App() {
     const id = Math.random().toString(36).substring(7);
     const orderNum = Math.floor(Math.random() * 900) + 100;
     const tableNum = Math.floor(Math.random() * 20) + 1;
-    const customer = CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
-    
+    const customer =
+      CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
+
     const itemsCount = Math.floor(Math.random() * 3) + 1;
     const items = Array.from({ length: itemsCount }).map((_, i) => ({
       id: `item-${id}-${i}`,
       name: MENU_ITEMS[Math.floor(Math.random() * MENU_ITEMS.length)],
       quantity: Math.floor(Math.random() * 2) + 1,
-      notes: Math.random() > 0.7 ? 'No onions' : undefined
+      notes: Math.random() > 0.7 ? "No onions" : undefined,
     }));
 
     const newOrder: Order = {
       id,
       orderNumber: `ORD-${orderNum}`,
-      tableNumber: `T-${tableNum.toString().padStart(2, '0')}`,
+      tableNumber: `T-${tableNum.toString().padStart(2, "0")}`,
       customerName: customer,
       items,
-      status: 'new',
+      status: "new",
       timestamp: Date.now(),
-      isUrgent: Math.random() > 0.8
+      isUrgent: Math.random() > 0.8,
     };
 
-    setOrders(prev => [newOrder, ...prev]);
-    
+    setOrders((prev) => [newOrder, ...prev]);
+
     // Visual notification
     toast(`New Order Received: #${orderNum}`, {
       description: `${customer} at Table T-${tableNum}`,
@@ -96,19 +99,23 @@ export default function App() {
     });
 
     // Simulated sound alert (visual cue)
-    const notificationElement = document.getElementById('notification-ping');
+    const notificationElement = document.getElementById("notification-ping");
     if (notificationElement) {
-      notificationElement.classList.add('animate-ping');
-      setTimeout(() => notificationElement.classList.remove('animate-ping'), 1000);
+      notificationElement.classList.add("animate-ping");
+      setTimeout(
+        () => notificationElement.classList.remove("animate-ping"),
+        1000,
+      );
     }
   }, []);
 
   // Auto-generate orders simulation
   useEffect(() => {
     if (!isAutoGenerating) return;
-    
+
     const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% chance every 10 seconds
+      if (Math.random() > 0.7) {
+        // 30% chance every 10 seconds
         generateNewOrder();
       }
     }, 10000);
@@ -116,9 +123,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isAutoGenerating, generateNewOrder]);
 
-  const filteredOrders = orders.filter(order => {
-    const matchesTab = activeTab === 'all' || order.status === activeTab;
-    const matchesSearch = 
+  const filteredOrders = orders.filter((order) => {
+    const matchesTab = activeTab === "all" || order.status === activeTab;
+    const matchesSearch =
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.tableNumber.toLowerCase().includes(searchQuery.toLowerCase());
@@ -127,67 +134,83 @@ export default function App() {
 
   const stats = {
     total: orders.length,
-    new: orders.filter(o => o.status === 'new').length,
-    preparing: orders.filter(o => o.status === 'preparing').length,
-    ready: orders.filter(o => o.status === 'ready').length,
+    new: orders.filter((o) => o.status === "new").length,
+    preparing: orders.filter((o) => o.status === "preparing").length,
+    ready: orders.filter((o) => o.status === "ready").length,
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500 font-sans selection:bg-primary/20">
       <Toaster position="top-right" richColors closeButton />
-      
+
       {/* Sidebar - Hidden on mobile, rail on desktop */}
       <aside className="fixed left-0 top-0 h-full w-16 md:w-20 border-r border-border/50 bg-card/50 backdrop-blur-xl z-50 flex flex-col items-center py-6 gap-8">
         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
           <UtensilsCrossed className="w-6 h-6 text-primary-foreground" />
         </div>
-        
+
         <nav className="flex flex-col gap-4 flex-grow">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className={cn(
               "w-12 h-12 rounded-xl transition-all duration-300",
-              currentView === 'orders' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
+              currentView === "orders"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-primary",
             )}
-            onClick={() => setCurrentView('orders')}
+            onClick={() => setCurrentView("orders")}
           >
             <LayoutDashboard className="w-6 h-6" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className={cn(
               "w-12 h-12 rounded-xl transition-all duration-300",
-              currentView === 'chef' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
+              currentView === "chef"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-primary",
             )}
-            onClick={() => setCurrentView('chef')}
+            onClick={() => setCurrentView("chef")}
           >
             <ChefHat className="w-6 h-6" />
           </Button>
-          <Button variant="ghost" size="icon" className="w-12 h-12 rounded-xl text-muted-foreground hover:text-primary">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-12 h-12 rounded-xl text-muted-foreground hover:text-primary"
+          >
             <CheckCircle2 className="w-6 h-6" />
           </Button>
-          <Button variant="ghost" size="icon" className="w-12 h-12 rounded-xl text-muted-foreground hover:text-primary">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-12 h-12 rounded-xl text-muted-foreground hover:text-primary"
+          >
             <Settings className="w-6 h-6" />
           </Button>
         </nav>
 
         <div className="flex flex-col gap-4 items-center">
           <div className="relative">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="w-12 h-12 rounded-xl text-muted-foreground hover:text-primary"
               onClick={() => setIsDarkMode(!isDarkMode)}
             >
-              {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+              {isDarkMode ? (
+                <Sun className="w-6 h-6" />
+              ) : (
+                <Moon className="w-6 h-6" />
+              )}
             </Button>
           </div>
           <div className="w-8 h-8 rounded-full bg-muted border border-border overflow-hidden">
-            <img 
-              src="https://picsum.photos/seed/chef/100/100" 
-              alt="Avatar" 
+            <img
+              src="https://picsum.photos/seed/chef/100/100"
+              alt="Avatar"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -197,20 +220,29 @@ export default function App() {
 
       {/* Main Content */}
       <main className="pl-16 md:pl-20 min-h-screen flex flex-col">
-        {currentView === 'orders' ? (
+        {currentView === "orders" ? (
           <>
             {/* Header */}
             <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Kitchen Dashboard</h1>
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    Kitchen Dashboard
+                  </h1>
                   <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
-                    Live Updates Active • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    Live Updates Active •{" "}
+                    {new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
                 <div className="relative flex items-center justify-center">
-                  <div id="notification-ping" className="absolute w-3 h-3 bg-blue-500 rounded-full opacity-0"></div>
+                  <div
+                    id="notification-ping"
+                    className="absolute w-3 h-3 bg-blue-500 rounded-full opacity-0"
+                  ></div>
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
               </div>
@@ -218,14 +250,17 @@ export default function App() {
               <div className="flex items-center gap-3">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search orders, tables..." 
+                  <Input
+                    placeholder="Search orders, tables..."
                     className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button onClick={generateNewOrder} className="hidden md:flex gap-2">
+                <Button
+                  onClick={generateNewOrder}
+                  className="hidden md:flex gap-2"
+                >
                   <Plus className="w-4 h-4" />
                   Test Order
                 </Button>
@@ -237,32 +272,34 @@ export default function App() {
               <div className="p-6 space-y-8 max-w-[1600px] mx-auto">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatsCard 
-                    title="Total Orders" 
-                    value={stats.total} 
-                    icon={LayoutDashboard} 
+                  <StatsCard
+                    title="Total Orders"
+                    value={stats.total}
+                    icon={LayoutDashboard}
                     trend="+12% from yesterday"
                     trendType="up"
                   />
-                  <StatsCard 
-                    title="New Orders" 
-                    value={stats.new} 
-                    icon={Bell} 
+                  <StatsCard
+                    title="New Orders"
+                    value={stats.new}
+                    icon={Bell}
                     trend={stats.new > 3 ? "High volume" : "Normal"}
                     trendType={stats.new > 3 ? "down" : "neutral"}
-                    className={stats.new > 0 ? "border-blue-500/50 bg-blue-500/5" : ""}
+                    className={
+                      stats.new > 0 ? "border-blue-500/50 bg-blue-500/5" : ""
+                    }
                   />
-                  <StatsCard 
-                    title="Preparing" 
-                    value={stats.preparing} 
-                    icon={ChefHat} 
+                  <StatsCard
+                    title="Preparing"
+                    value={stats.preparing}
+                    icon={ChefHat}
                     trend="Avg. 12m prep time"
                     trendType="neutral"
                   />
-                  <StatsCard 
-                    title="Ready" 
-                    value={stats.ready} 
-                    icon={CheckCircle2} 
+                  <StatsCard
+                    title="Ready"
+                    value={stats.ready}
+                    icon={CheckCircle2}
                     trend="98% on-time delivery"
                     trendType="up"
                   />
@@ -270,9 +307,15 @@ export default function App() {
 
                 {/* Controls & Filters */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full md:w-auto">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={(v: any) => setActiveTab(v)}
+                    className="w-full md:w-auto"
+                  >
                     <TabsList className="bg-muted/50 p-1">
-                      <TabsTrigger value="all" className="px-6">All</TabsTrigger>
+                      <TabsTrigger value="all" className="px-6">
+                        All
+                      </TabsTrigger>
                       <TabsTrigger value="new" className="px-6 flex gap-2">
                         New
                         {stats.new > 0 && (
@@ -281,22 +324,30 @@ export default function App() {
                           </span>
                         )}
                       </TabsTrigger>
-                      <TabsTrigger value="preparing" className="px-6">Preparing</TabsTrigger>
-                      <TabsTrigger value="ready" className="px-6">Ready</TabsTrigger>
+                      <TabsTrigger value="preparing" className="px-6">
+                        Preparing
+                      </TabsTrigger>
+                      <TabsTrigger value="ready" className="px-6">
+                        Ready
+                      </TabsTrigger>
                     </TabsList>
                   </Tabs>
 
                   <div className="flex items-center gap-6 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-xl border border-border/50">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground">Auto-Refresh</span>
-                      <Switch 
-                        checked={isAutoGenerating} 
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Auto-Refresh
+                      </span>
+                      <Switch
+                        checked={isAutoGenerating}
                         onCheckedChange={setIsAutoGenerating}
                       />
                     </div>
                     <div className="h-4 w-[1px] bg-border"></div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground">Sound Alerts</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Sound Alerts
+                      </span>
                       <Switch defaultChecked />
                     </div>
                   </div>
@@ -307,14 +358,14 @@ export default function App() {
                   <AnimatePresence mode="popLayout">
                     {filteredOrders.length > 0 ? (
                       filteredOrders.map((order) => (
-                        <OrderCard 
-                          key={order.id} 
-                          order={order} 
-                          onStatusChange={handleStatusChange} 
+                        <OrderCard
+                          key={order.id}
+                          order={order}
+                          onStatusChange={handleStatusChange}
                         />
                       ))
                     ) : (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="col-span-full flex flex-col items-center justify-center py-20 text-center"
@@ -322,9 +373,12 @@ export default function App() {
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                           <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold">No orders found</h3>
+                        <h3 className="text-lg font-semibold">
+                          No orders found
+                        </h3>
                         <p className="text-sm text-muted-foreground max-w-xs">
-                          Try adjusting your filters or search query to find what you're looking for.
+                          Try adjusting your filters or search query to find
+                          what you're looking for.
                         </p>
                       </motion.div>
                     )}
@@ -351,9 +405,7 @@ export default function App() {
               Staff: 12 Active
             </span>
           </div>
-          <div>
-            ChefStream v1.0.4 • System Operational
-          </div>
+          <div>ChefStream v1.0.4 • System Operational</div>
         </footer>
       </main>
     </div>
